@@ -6,7 +6,7 @@
 |----------------------------------|----------|
 | Lecture | [pdf](M2_2-BIMS-epigenomique.pdf) |
 | Hands-on | [HTML](https://slegras.github.io/M2.2-BIMS-epigenomique/hands-on/hands-on_empty.html) |
+| Hands-on | [Rmd](hands-on/hands-on_empty.Rmd) |
 
 ## Links
 - Web pages: <https://slegras.github.io/M2.2-BIMS-epigenomique/>
-
