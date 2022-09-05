@@ -11,4 +11,5 @@
 | Hands-on | [HTML](hands-on/hands-on_empty.html) |
 
 ## Links
-- Web pages: <https://ifb-elixirfr.github.io/EBAII/>
+- Web pages: <https://slegras.github.io/M2.2-BIMS-epigenomique/>
+
