@@ -1,17 +1,14 @@
-# Initiation au traitement des données de génomique obtenues par séquençage à haut débit
+# Introduction to ChIP-seq data analysis
 
-**Ecole de Bioinformatique Aviesan - IFB - Inserm (EBAII)**
+**Master 2.2 BIMS - Epigenomics**
 
 
-## Teaching material
+## Training material
 
-- [Session 2021 niveau 1](2021/ebaiin1/README.md)
-- [Session 2021 niveau 2](2021/ebaiin2/README.md)
-- [Session 2020](2020/README.md)
-- [Sessions précédentes](http://france-bioinformatique.fr/)
+| Cours | Supports |
+|----------------------------------|----------|
+| Lecture | [pdf](M2_2-BIMS-epigenomique.pdf) |
+| Hands-on | [HTML](hands-on/hands-on_empty.html) |
 
 ## Links
-
-- Github repo: <https://github.com/IFB-ElixirFr/EBAII/>
 - Web pages: <https://ifb-elixirfr.github.io/EBAII/>
-
