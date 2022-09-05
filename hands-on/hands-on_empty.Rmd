@@ -40,8 +40,9 @@ This training gives an introduction to ChIP-seq data analysis, covering the proc
 
 ## - Dataset description
 For this training, we will use two datasets:
-* a dataset produced by Myers et al [Pubmed](http://www.ncbi.nlm.nih.gov/pubmed/23818864) involved in the regulation of gene expression under anaerobic conditions in bacteria. We will focus on one factor: **FNR**. The advantage of this dataset is its small size, allowing real time execution of all steps of the dataset
-* a dataset of ChIP-seq peaks obtained in different mouse tissues for the p300 co-activator protein by Visel et al. [Pubmed](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2745234/); we will use this dataset to illustrate downstream annotation of peaks using R.
+
+  * a dataset produced by Myers et al [Pubmed](http://www.ncbi.nlm.nih.gov/pubmed/23818864) involved in the regulation of gene expression under anaerobic conditions in bacteria. We will focus on one factor: **FNR**. The advantage of this dataset is its small size, allowing real time execution of all steps of the dataset
+  * a dataset of ChIP-seq peaks obtained in different mouse tissues for the p300 co-activator protein by Visel et al. [Pubmed](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2745234/); we will use this dataset to illustrate downstream annotation of peaks using R.
 
 # - Downloading ChIP-seq reads from NCBI
 **Goal**: Identify the datasets corresponding to the studied article and retrieve the data (reads as FASTQ files) corresponding to 2 replicates of a condition and the corresponding control.
