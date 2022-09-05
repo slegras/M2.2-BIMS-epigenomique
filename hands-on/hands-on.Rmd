@@ -1,7 +1,7 @@
 ---
 title: "M2.2 BIMS - epigenomics"
 author: "Stephanie Le Gras$^{1}$ - slegras@igbmc.fr"
-date: "`r Sys.Date()`"
+date: "2022 September 08-09"
 output:
   html_document:
     fig_caption: yes
@@ -105,7 +105,7 @@ cd M2.2-BIMS-epigenomique
 4. Copy the directory containing data
 
 ```{bash eval=FALSE}
-cp -r /shared/home/slegras/M2.2-BIMS-epigenomique/data .
+cp -r /shared/projects/form_2022_24/M2.2-BIMS-epigenomique/data .
 ```
 
 7. Your directory structure should be like this
@@ -393,7 +393,7 @@ plotFingerprint --numberOfSamples 10000 -b ../02-Mapping/bam/SRR576933.bam ../02
 ```
 4. If plotFingerprint takes ages to run. Take the file that has already been prepared for the training.
 ```{bash eval=FALSE}
-cp /shared/home/slegras/M2.2-BIMS-epigenomique/03-ChIPQualityControls/fingerprint.png .
+cp /shared/projects/form_2022_24/M2.2-BIMS-epigenomique/03-ChIPQualityControls/fingerprint.png .
 ```
 5. Go to the file using the directory tree on the left of the Jupyterhub panel and click on the fingerprint.png file to display it in Jupyterhub.
 
