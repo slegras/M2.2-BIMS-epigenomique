@@ -1,9 +1,6 @@
 # Master 2.2 BIMS - Epigenomics
-
-**Introduction to ChIP-seq data analysis**
-
-
-## Training material
+## Introduction to ChIP-seq data analysis
+### Training material
 
 | Cours | Supports |
 |----------------------------------|----------|
