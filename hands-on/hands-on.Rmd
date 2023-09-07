@@ -1,7 +1,7 @@
 ---
 title: "M2.2 BIMS - epigenomics"
 author: "Stephanie Le Gras$^{1}$ - slegras@igbmc.fr"
-date: "2022 September 08-09"
+date: "2023 September 07-08"
 output:
   html_document:
     fig_caption: yes
@@ -44,73 +44,42 @@ For this training, we will use two datasets:
   * a dataset produced by Myers et al [Pubmed](http://www.ncbi.nlm.nih.gov/pubmed/23818864) involved in the regulation of gene expression under anaerobic conditions in bacteria. We will focus on one factor: **FNR**. The advantage of this dataset is its small size, allowing real time execution of all steps of the dataset
   * a dataset of ChIP-seq peaks obtained in different mouse tissues for the p300 co-activator protein by Visel et al. [Pubmed](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2745234/); we will use this dataset to illustrate downstream annotation of peaks using R.
 
-# - Downloading ChIP-seq reads from NCBI
-**Goal**: Identify the datasets corresponding to the studied article and retrieve the data (reads as FASTQ files) corresponding to 2 replicates of a condition and the corresponding control.
+## - Data availability
+Data are publicly available as the GEO's experiment dataset GSE41187. Raw data were downloaded from [Sequence Read Archive (SRA)](http://www.ncbi.nlm.nih.gov/sra) and put on the server (see #faq). Samples of interest are FNR IP ChIP-seq Anaerobic A (GEO:GSM1010219 / SRA:SRR576933), FNR IP ChIP-seq Anaerobic B (GEO:GSM1010220 / SRA:SRR576934) and anaerobic INPUT DNA (GEO:GSM1010224 / SRA:SRR576938).
 
-## - Obtaining an identifier for a chosen dataset
-NGS datasets are (usually) made freely accessible for other scientists, by depositing these datasets into specialized databanks. [Sequence Read Archive (SRA)](http://www.ncbi.nlm.nih.gov/sra) located in USA hosted by NCBI, and its European equivalent [European Nucleotide Archive (ENA)](http://www.ebi.ac.uk/ena) located in England hosted by EBI both contains **raw reads**.
-
-Functional genomic datasets (transcriptomics, genome-wide binding such as ChIP-seq,...) are deposited in the databases [Gene Expression Omnibus (GEO)](http://www.ncbi.nlm.nih.gov/geo/) or its European equivalent [ArrayExpress](https://www.ebi.ac.uk/arrayexpress/).
-
-Within an article of interest, search for a sentence mentioning the deposition of the data in a database. Here, the following sentence can be found at the end of the Materials and Methods section:
-*"All genome-wide data from this publication have been deposited in NCBI’s Gene Expression Omnibus (**GSE41195**)."*
-We will thus use the **GSE41195** identifier to retrieve the dataset from the **NCBI GEO** (Gene Expression Omnibus) database.
-
-## - Accessing GSE41195 from GEO
-1.  The GEO database hosts processed data files and many details related to the experiments. SRA (Sequence Read Archive) stores the actual raw sequence data.
-2. Search in Google **GSE41195**. Click on the first link to directly access the correct page on the GEO database.
-![alt text][geo]
-3. This GEO entry is a mixture of expression analysis (Nimblegen Gene Expression Array), chip-chip and chip-seq. At the bottom of the page, click on the subseries related to the chip-seq datasets. (this subseries has its own identifier: **GSE41187**).
-![alt text][geo2]
-4. From this page, we will focus on the experiment **FNR IP ChIP-seq Anaerobic A**. At the bottom of the page, click on the link "**GSM1010219** - FNR IP ChIP-seq Anaerobic A".
-5. In the new page, go to the bottom to find the SRA identifier. This is the identifier of the raw dataset stored in the SRA database.  
-![alt text][geo3]
-6. Copy the identifier **SRX189773** (do not click on the link that would take you to the SRA database, see below why)
-
-## - Downloading FASTQ file from the ENA database
-Although direct access to the SRA database at the NCBI is doable, SRA does not store sequences in a FASTQ format. So, in practice, it's simpler (and quicker!!) to download datasets from the ENA database (European Nucleotide Archive) hosted by EBI (European Bioinformatics Institute) in UK. ENA encompasses the data from SRA.
-
-1. Go to the [EBI](http://www.ebi.ac.uk/) website. Paste your SRA identifier (SRX189773) and click on the button "search".
-![alt text][ebi4]
-2. Click on the first result. On the next page, there is a link to the FASTQ file. For efficiency, this file has already been downloaded and is available in the "data" folder (SRR576933.fastq.gz)  
-![alt text][ebi5]
-
-**tip**: To download the replicate and control datasets, we should redo the same steps starting from the GEO web page specific to the chip-seq datasets (see step 2.4) and choose **FNR IP ChIP-seq Anaerobic B** and **anaerobic INPUT DNA**. Downloaded FASTQ files are available in the data folder (SRR576934.fastq.gz and SRR576938.fastq.gz respectively)
-
-**At this point, you have three FASTQ files, two IPs, one control (INPUT).**
-
-# Connect to the server and set up your environment
+# - Connect to the server and set up your environment
 ## - Sign in to [Jupyterhub](https://jupyterhub.cluster.france-bioinformatique.fr) and open a Terminal
 1. Go to [Jupyterhub](https://jupyterhub.cluster.france-bioinformatique.fr)
-2. select a job profile: "M2.2 BIMS épigénomique" and click on "Start"
+2. select reservation: form_2022_32_0, CPUS: 4 and Memory (in GB): 10
 ![alt text][jupebai]
-3. In the launcher, click on "Terminal" in "Other" section. You should be in your home directory by default. Check it:
+3. Click on “Start”
+4. In the launcher, click on "Terminal" in "Other" section. You are in your home directory by default. Check it:
 ```{bash eval=FALSE}
 pwd
 ```
 
 ## - Set up your working environment
-1. Go to your project directory
+1. Go to the directory used for this training
 ```{bash eval=FALSE}
-cd /shared/projects/<your_project>
+cd /shared/projects/2321_m22_bims/
 ```
-2. Create a directory that will contain all results of the upcoming analyses.
+2. Create a directory with your user id. You're going to work in this directory. Make sure not to use other's!
 ```{bash eval=FALSE}
-mkdir M2.2-BIMS-epigenomique
+mkdir <userid>
 ```
 3. Go to the newly created directory
 ```{bash eval=FALSE}
-cd M2.2-BIMS-epigenomique
+cd <userid>
 ```
-4. Copy the directory containing data
+4. Copy the data we are going to use during the training
 
 ```{bash eval=FALSE}
-cp -r /shared/projects/form_2022_24/M2.2-BIMS-epigenomique/data .
+cp -r /shared/projects/2321_m22_bims/data .
 ```
 
 7. Your directory structure should be like this
  ```
-/shared/projects/<your_project>/M2.2-BIMS-epigenomique
+/shared/projects/2321_m22_bims/<userid>
 │
 └───data
 ```
@@ -120,8 +89,7 @@ If you wish, you can check your directory structure:
  tree
 ```
 
-
-# Quality control of the reads and statistics
+# - Quality control of the reads and statistics
 **Goal**: Get some basic information on the data (read length, number of reads, global quality of datasets)  
 
 ## - Generating the FASTQC report
@@ -138,7 +106,7 @@ cd 01-QualityControl
 
 Your directory structure should be like this
 ```
-/shared/projects/<your_project>/M2.2-BIMS-epigenomique
+/shared/projects/2321_m22_bims/<userid>
 │
 └───data
 │   
@@ -146,28 +114,28 @@ Your directory structure should be like this
 ```
 3. Get FastQC available in your environment
 ```{bash eval=FALSE}
-module add fastqc/0.11.9
+module load fastqc/0.11.9
 ```
 4. Check the help page of the program to see its usage and parameters.
 
 ```{bash eval=FALSE}
 fastqc --help
 ```
-5. Launch the FASTQC program on the experiment file (SRR576933.fastq.gz)
+5. Launch the FASTQC program on the experiment file (FNR_IP_ChIP-seq_Anaerobic_A.fastq.gz)
   * -o: creates all output files in the specified output directory. '.' means current directory.
 ```{bash eval=FALSE}
-fastqc ../data/SRR576933.fastq.gz -o .
+fastqc ../data/FNR_IP_ChIP-seq_Anaerobic_A.fastq.gz -o .
 ```  
 6. Wait until the analysis is finished. Check the FastQC result files.
 ```{bash eval=FALSE}
 ls
 ```
-> SRR576933_fastqc.html  SRR576933_fastqc.zip
+> FNR_IP_ChIP-seq_Anaerobic_A_fastqc.html  FNR_IP_ChIP-seq_Anaerobic_A_fastqc.zip
 
-7. Go to the directory /shared/projects/<your_project>/M2.2-BIMS-epigenomique/1-QualityControl in the tree diretory on the left of the jupyterhub panel and double click on SRR576933_fastqc.html to visualize the file.
+7. Go to the directory /shared/projects/2321_m22_bims/<userid>/1-QualityControl in the tree directory on the left of the jupyterhub window and double click on FNR_IP_ChIP-seq_Anaerobic_A_fastqc.html to visualize the file.
 ![alt text][fastqc]
 
-8. Launch the FASTQC program on the replicate (SRR576934.fastq.gz) and on the control file (SRR576938.fastq.gz)
+8. Launch the FASTQC program on the replicate (FNR_IP_ChIP-seq_Anaerobic_B.fastq.gz) and on the control file (Anaerobic_INPUT_DNA.fastq.gz)
 
 **Analyze the result of the FASTQC program:**
 
@@ -178,7 +146,7 @@ ls
 
 9. Once you are done with FastQC, unload it
 ```{bash eval=FALSE}
-module rm fastqc/0.11.9
+module unload fastqc/0.11.9
 ```
 
 <!-- ### 2 - Organism length
@@ -202,7 +170,7 @@ There are multiple programs to perform the mapping step. For reads produced by a
 ## - Bowtie
 1. Load Bowtie
 ```{bash eval=FALSE}
-module add bowtie/1.2.3
+module load bowtie/1.3.1
 ```
 2. Try out bowtie
 ```{bash eval=FALSE}
@@ -247,8 +215,8 @@ bowtie-build ../../data/Escherichia_coli_K12.fasta Escherichia_coli_K12
 cd ..
 ```
 
-## - Mapping the IP samples
-1. Create a directory named **IP** to put mapping results for IP
+## - Mapping the samples
+1. Create a directory named **bam** to put mapping results
 ```{bash eval=FALSE}
 mkdir bam
 ```
@@ -258,7 +226,7 @@ cd bam
 ```
 Your directory structure should be like this:
 ```
-/shared/projects/<your_project>/M2.2-BIMS-epigenomique
+/shared/projects/2321_m22_bims/<userid>
 │
 └───data
 │   
@@ -274,14 +242,16 @@ Your directory structure should be like this:
   * Escherichia_coli_K12 is the name of our genome index file
   * Number of mismatches for SOAP-like alignment policy (-v): to 2, which will allow two mismatches anywhere in the read, when aligning the read to the genome sequence.
   * Suppress all alignments for a read if more than n reportable alignments exist (-m): to 1, which will exclude the reads that do not map uniquely to the genome.
-  * -q indicates the input file is in FASTQ format. SRR576933.fastq is the name of our FASTQ file.
+  * -q indicates the input file is in FASTQ format. FNR_IP_ChIP-seq_Anaerobic_A.fastq is the name of our FASTQ file.
   * -3 will trim x base from the end of the read. As our last position is of low quality, we'll trim 1 base.
   * -S will output the result in SAM format
-  * 2> SRR576933.out will output some statistics about the mapping in the file SRR576933.out
+  * 2> FNR_IP_ChIP-seq_Anaerobic_A.out will output some statistics about the mapping in the file FNR_IP_ChIP-seq_Anaerobic_A.out
 ```{bash eval=FALSE}  
 ## Run alignment
 ## Tip: first type bowtie command line then add quotes around and prefix it with "sbatch --cpus 10 --wrap="
-sbatch --cpus-per-task 10 --wrap="bowtie -p 10 ../index/Escherichia_coli_K12 ../../data/SRR576933.fastq.gz -v 2 -m 1 -3 1 -S 2> SRR576933.out > SRR576933.sam"
+module load formation/2321
+
+sbatch --cpus-per-task 10 --wrap="bowtie -p 10 ../index/Escherichia_coli_K12 ../../data/FNR_IP_ChIP-seq_Anaerobic_A.fastq.gz -v 2 -m 1 -3 1 -S 2> FNR_IP_ChIP-seq_Anaerobic_A.out > FNR_IP_ChIP-seq_Anaerobic_A.sam"
 ```  
 This should take few minutes as we work with a small genome. For the human genome, we would need either more time and more resources.
 
@@ -291,41 +261,41 @@ Bowtie output is a [SAM](https://samtools.github.io/hts-specs/SAMv1.pdf) file. T
   * -b: output BAM
 ```{bash eval=FALSE}
 ## First load samtools
-module add samtools/1.10
+module load samtools/1.15.1
 ## Then run samtools
-samtools sort SRR576933.sam | samtools view -b > SRR576933.bam
+samtools sort -o FNR_IP_ChIP-seq_Anaerobic_A.bam -O BAM FNR_IP_ChIP-seq_Anaerobic_A.sam
 ```
 
 5. Create an index for the bam file
 ```{bash eval=FALSE}
-samtools index SRR576933.bam
+samtools index FNR_IP_ChIP-seq_Anaerobic_A.bam
 ```
 
 6. Compress the .sam file (you could also delete the file)
 ```{bash eval=FALSE}
-gzip SRR576933.sam
+gzip FNR_IP_ChIP-seq_Anaerobic_A.sam
 ```
 
 **Analyze the result of the mapped reads:  
-Open the file SRR576933.out (for example using the ` less ` command), which contains some statistics about the mapping. How many reads were mapped? How many multi-mapped reads were originally present in the sample? To quit less press 'q'**
+Open the file FNR_IP_ChIP-seq_Anaerobic_A.out (for example using the ` less ` command), which contains some statistics about the mapping. How many reads were mapped? How many multi-mapped reads were originally present in the sample? To quit less press 'q'**
 
 7. Once it's done, unload the tools you used
 ```{bash eval=FALSE}
-module rm samtools/1.10 bowtie/1.2.3
+module unload samtools/1.15.1 bowtie/1.3.1
 ```
 
 ## - Map the second replicate and the control
-1. Repeat the steps above (3 -> 6 - Mapping) for the files SRR576934.fastq.gz and SRR576938.fastq.gz in the directory named "**bam**" within the directory 02-Mapping.
+1. Repeat the steps above (3 -> 6 - Mapping) for the files FNR_IP_ChIP-seq_Anaerobic_B.fastq.gz and Anaerobic_INPUT_DNA.fastq.gz in the directory named "**bam**" within the directory 02-Mapping.
 
 **Analyze the result of the mapped reads:  
-Open the file SRR576938.out. How many reads were mapped?**
+Open the file Anaerobic_INPUT_DNA.out. How many reads were mapped?**
 
 # - Estimating the number of duplicated reads
 **Goal**: Duplicated reads i.e reads mapped at the same positions in the genome are present in ChIP-seq results. They can arise for several reasons including a biased amplification during the PCR step of the library prep, DNA fragment coming from repetitive elements of the genome, sequencing saturation or the same clusters read several times on the flowcell (i.e optical duplicates). As analyzing ChIP-Seq data consist at some point in detecting signal enrichment, we can not keep duplicated reads for subsequent analysis. So let's detect them using [Picard](http://broadinstitute.github.io/picard/) [@broadinstitute_picard].
 
 1. Go to the directory with alignment files
 ```{bash eval=FALSE}
-cd /shared/projects/<your_project>/M2.2-BIMS-epigenomique/02-Mapping/bam
+cd /shared/projects/2321_m22_bims/<userid>/02-Mapping/bam
 ```
 2. Run Picard markDuplicates to mark duplicated reads (= reads mapping at the exact same location on the genome)
   * CREATE_INDEX: Create .bai file for the result bam file with marked duplicate reads
@@ -335,37 +305,35 @@ cd /shared/projects/<your_project>/M2.2-BIMS-epigenomique/02-Mapping/bam
   * VALIDATION_STRINGENCY: Validation stringency for all SAM files read by picard.
 ```{bash eval=FALSE}
 ## Load picard
-module add picard/2.22.0
+module load picard/2.23.5
 
 ## Run picard
 picard MarkDuplicates \
 CREATE_INDEX=true \
-INPUT=SRR576933.bam \
-OUTPUT=Marked_SRR576933.bam \
-METRICS_FILE=metrics \
-VALIDATION_STRINGENCY=STRICT
+INPUT=FNR_IP_ChIP-seq_Anaerobic_A.bam \
+OUTPUT=Marked_FNR_IP_ChIP-seq_Anaerobic_A.bam \
+METRICS_FILE=metrics
 
 picard MarkDuplicates \
 CREATE_INDEX=true \
-INPUT=SRR576938.bam \
-OUTPUT=Marked_SRR576938.bam \
-METRICS_FILE=metrics \
-VALIDATION_STRINGENCY=STRICT
+INPUT=Anaerobic_INPUT_DNA.bam \
+OUTPUT=Marked_Anaerobic_INPUT_DNA.bam \
+METRICS_FILE=metrics
 ```
 
 To determine the number of duplicated reads marked by Picard, we can run the `samtools flagstat` command:
 
 ```{bash eval=FALSE}
 ## Add samtools to your environment
-module add samtools/1.10
+module load samtools/1.15.1
 ## run samtools
-samtools flagstat Marked_SRR576933.bam
+samtools flagstat Marked_FNR_IP_ChIP-seq_Anaerobic_A.bam
 ```
 
-Go back to working home directory (i.e /shared/projects/<your_project>/M2.2-BIMS-epigenomique/)
+Go back to working home directory (i.e /shared/projects/2321_m22_bims/<userid>/)
 ```{bash eval=FALSE}
 ## Unload picard and samtools
-module rm samtools/1.10 picard/2.22.0
+module unload samtools/1.15.1 picard/2.23.5
 ## If you are in 02-Mapping/bam
 cd ../..
 ```
@@ -387,13 +355,18 @@ cd 03-ChIPQualityControls
   * -plot: File name of the output figure (extension can be either “png”, “eps”, “pdf” or “svg”)
 ```{bash eval=FALSE}
 ## Load deeptools in your environment
-module add deeptools/3.2.0
+module load deeptools/3.5.0
 ## Run deeptools fingerprint
-plotFingerprint --numberOfSamples 10000 -b ../02-Mapping/bam/SRR576933.bam ../02-Mapping/bam/SRR576934.bam ../02-Mapping/bam/SRR576938.bam -plot fingerprint_10000.png
+plotFingerprint \
+  --numberOfSamples 10000 \
+  -b ../02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_A.bam \
+     ../02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_B.bam \
+     ../02-Mapping/bam/Anaerobic_INPUT_DNA.bam \
+  -plot fingerprint_10000.png
 ```
 4. If plotFingerprint takes ages to run. Take the file that has already been prepared for the training.
 ```{bash eval=FALSE}
-cp /shared/projects/form_2022_24/M2.2-BIMS-epigenomique/03-ChIPQualityControls/fingerprint.png .
+cp /shared/home/slegras/2321_m22_bims/slegras/03-ChIPQualityControls/fingerprint.png .
 ```
 5. Go to the file using the directory tree on the left of the Jupyterhub panel and click on the fingerprint.png file to display it in Jupyterhub.
 
@@ -403,7 +376,7 @@ cp /shared/projects/form_2022_24/M2.2-BIMS-epigenomique/03-ChIPQualityControls/f
 Go back to working home directory (i.e /shared/projects/training/\<login\>/M2.2-BIMS-epigenomique)
 ```{bash eval=FALSE}
 ## Unload deepTools
-module rm deeptools/3.2.0
+module unload deeptools/3.5.0
 ## If you are in 03-ChIPQualityControls
 cd ..
 ```
@@ -419,12 +392,12 @@ If the data are on your computer, to prevent data transfer, it's easier to visua
 1. Download the following files from the server onto your computer
   * data/Escherichia_coli_K12.fasta
   * data/Escherichia_coli_K_12_MG1655.annotation.fixed.gtf.gz
-  * 02-Mapping/bam/SRR576933.bam
-  * 02-Mapping/bam/SRR576933.bam.bai
-  * 02-Mapping/bam/SRR576934.bam
-  * 02-Mapping/bam/SRR576934.bam.bai  
-  * 02-Mapping/bam/SRR576938.bam
-  * 02-Mapping/bam/SRR576938.bam.bai
+  * 02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_A.bam
+  * 02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_A.bam.bai
+  * 02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_B.bam
+  * 02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_B.bam.bai  
+  * 02-Mapping/bam/Anaerobic_INPUT_DNA.bam
+  * 02-Mapping/bam/Anaerobic_INPUT_DNA.bam.bai
 2. Open IGV on your computer
 3. Load the genome
   * Genomes / Load Genome from File...
@@ -432,7 +405,7 @@ If the data are on your computer, to prevent data transfer, it's easier to visua
 4. Load an annotation file named Escherichia_coli_K12_MG1655.annotation.gff3 into IGV
   * File / Load from File...
   * Select the annotation file. The positions of the genes are now loaded.
-5. Load the three bam files (SRR576933.bam, SRR576934.bam and SRR576938.bam) in IGV.
+5. Load the three bam files (FNR_IP_ChIP-seq_Anaerobic_A.bam, FNR_IP_ChIP-seq_Anaerobic_B.bam and Anaerobic_INPUT_DNA.bam) in IGV.
 
 **Browse around in the genome. Do you see peaks?**  
 **Browse into IGV. Go to the following genes: pepT (geneID:b1127), ycfP (geneID:b1108)**
@@ -444,7 +417,7 @@ However, looking at BAM file as such does not allow to directly compare the two 
 1. Try it out
 ```{bash eval=FALSE}
 ## Load deeptools in your environment
-module add deeptools/3.2.0
+module load deeptools/3.5.0
 ## run bamCoverage
 bamCoverage --help
 ```
@@ -459,7 +432,7 @@ cd 04-Visualization
 
 Your directory structure should be like this:
 ```
-/shared/projects/<your_project>/M2.2-BIMS-epigenomique
+/shared/projects/2321_m22_bims/<userid>
 │
 └───data
 │   
@@ -484,16 +457,22 @@ Your directory structure should be like this:
   * --extendReads 200: Extend reads to fragment size
   * --ignoreDuplicates: reads that have the same orientation and start position will be considered only once
 ```{bash eval=FALSE}
-bamCoverage --bam ../02-Mapping/bam/Marked_SRR576933.bam \
---outFileName SRR576933_nodup.bw --outFileFormat bigwig --effectiveGenomeSize 4639675 \
---normalizeUsing RPGC --skipNonCoveredRegions --extendReads 200 --ignoreDuplicates
+bamCoverage \
+  --bam ../02-Mapping/bam/Marked_FNR_IP_ChIP-seq_Anaerobic_A.bam \
+  --outFileName FNR_IP_ChIP-seq_Anaerobic_A_nodup.bw \
+  --outFileFormat bigwig \
+  --effectiveGenomeSize 4639675 \
+  --normalizeUsing CPM \
+  --skipNonCoveredRegions \
+  --extendReads 200 \
+  --ignoreDuplicates
 ```
 
 5. Do it for the replicate and the control.
 6. Download the three bigwig files you have just generated
-  * 04-Visualization/SRR576933_nodup.bw
-  * 04-Visualization/SRR576934_nodup.bw  
-  * 04-Visualization/SRR576938_nodup.bw
+  * 04-Visualization/FNR_IP_ChIP-seq_Anaerobic_A_nodup.bw
+  * 04-Visualization/FNR_IP_ChIP-seq_Anaerobic_B_nodup.bw  
+  * 04-Visualization/Anaerobic_INPUT_DNA.bw
 7. Load the three bigwig files in IGV
   * File / Load from File...
   * Select the three bigwig files.
@@ -503,7 +482,7 @@ bamCoverage --bam ../02-Mapping/bam/Marked_SRR576933.bam \
 **Go back to the genes we looked at earlier: pepT, ycfP. Look at the shape of the signal.**  
 **Keep IGV opened.**
 
-Go back to working home directory (i.e /shared/projects/<your_project>/M2.2-BIMS-epigenomique)
+Go back to working home directory (i.e /shared/projects/2321_m22_bims/<userid>)
 ```{bash eval=FALSE}
 ## If you are in 04-Visualization
 cd ..
@@ -528,14 +507,14 @@ cd 05-PeakCalling/replicates
 3. Try out MACS2
 ```{bash eval=FALSE}
 ## Load macs2 in your environment
-module add macs2/2.2.7.1
+module load macs2/2.2.7.1
 macs2 callpeak
 ```
 This prints the help of the program.
 
 4. Let's see the parameters of MACS before launching the mapping:
-  * ChIP-seq tag file (-t) is the name of our experiment (treatment) mapped read file SRR576933.bam
-  * ChIP-seq control file (-c) is the name of our input (control) mapped read file SRR576938.bam
+  * ChIP-seq tag file (-t) is the name of our experiment (treatment) mapped read file FNR_IP_ChIP-seq_Anaerobic_A.bam
+  * ChIP-seq control file (-c) is the name of our input (control) mapped read file Anaerobic_INPUT_DNA.bam
   * --format BAM indicates the input file are in BAM format. Other formats can be specified (SAM,BED...)
   * --gsize Effective genome size: this is the size of the genome considered "usable" for peak calling. This value is given by the MACS developers on their website. It is smaller than the complete genome because many regions are excluded (telomeres, highly repeated regions...). The default value is for human (2700000000.0), so we need to change it. As the value for E. coli is not provided, we will take the complete genome size 4639675.
   * --name provides a prefix for the output files. We set this to FNR_Anaerobic_A, but it could be any name.
@@ -547,10 +526,16 @@ This prints the help of the program.
   <!-- * --diag is optional and increases the running time. It tests the saturation of the dataset, and gives an idea of how many peaks are found with subsets of the initial dataset. -->
   * &> MACS.out will output the verbosity (=information) in the file MACS.out
 ```{bash eval=FALSE}
-macs2 callpeak -t ../../02-Mapping/bam/SRR576933.bam \
--c ../../02-Mapping/bam/SRR576938.bam --format BAM \
---gsize 4639675 --name 'FNR_Anaerobic_A' --bw 400 \
---fix-bimodal -p 1e-2 &> repA_MACS.out
+macs2 callpeak \
+  -t ../../02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_A.bam \
+  -c ../../02-Mapping/bam/Anaerobic_INPUT_DNA.bam \
+  --format BAM \
+  --gsize 4639675 \
+  --name 'FNR_Anaerobic_A' \
+  --bw 400 \
+  --fix-bimodal \
+  -p 1e-2 \
+  &> repA_MACS.out
 ```
 5. Run macs2 for replicate A, then go to repB directory and run macs2 for replicate B by changing the treatment file (-t), the output file name (-n) and the log file (&>), this should take a few minutes each.
 
@@ -562,10 +547,17 @@ mkdir pool
 cd pool
 
 # Run macs2 for pooled replicates
-macs2 callpeak -t ../../../02-Mapping/bam/SRR576933.bam ../../../02-Mapping/bam/SRR576934.bam \
--c ../../../02-Mapping/bam/SRR576938.bam --format BAM \
---gsize 4639675 --name 'FNR_Anaerobic_pool' --bw 400 \
---fix-bimodal -p 1e-2 &> pool_MACS.out
+macs2 callpeak \
+  -t ../../../02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_A.bam \
+     ../../../02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_B.bam \
+  -c ../../../02-Mapping/bam/Anaerobic_INPUT_DNA.bam \
+  --format BAM \
+  --gsize 4639675 \
+  --name 'FNR_Anaerobic_pool' \
+  --bw 400 \
+  --fix-bimodal \
+  -p 1e-2 \
+  &> pool_MACS.out
 ```
 
 ## - Analyzing MACS results
@@ -586,7 +578,7 @@ cd idr
 ```
 Your directory structure should be like this:
 ```
-/shared/projects/<your_project>/M2.2-BIMS-epigenomique
+/shared/projects/2321_m22_bims/<userid>
 │
 └───data
 │   
@@ -609,7 +601,7 @@ Your directory structure should be like this:
 2. Load the module idr and have a look at its parameters
 ```{bash eval=FALSE}
 ## Load idr in your environment
-module add idr/2.0.4.2
+module load idr/2.0.4.2
 idr --help
 ```
 * --samples : peak files of each individual replicate
@@ -620,16 +612,19 @@ idr --help
 
 3. Run idr
 ```{bash eval=FALSE}
-idr --samples ../replicates/FNR_Anaerobic_A_peaks.narrowPeak ../replicates/FNR_Anaerobic_B_peaks.narrowPeak \
---peak-list ../pool/FNR_Anaerobic_pool_peaks.narrowPeak \
---input-file-type narrowPeak --output-file FNR_anaerobic_idr_peaks.bed \
---plot
+idr \
+  --samples ../replicates/FNR_Anaerobic_A_peaks.narrowPeak \
+            ../replicates/FNR_Anaerobic_B_peaks.narrowPeak \
+  --peak-list ../pool/FNR_Anaerobic_pool_peaks.narrowPeak \
+  --input-file-type narrowPeak \
+  --output-file FNR_anaerobic_idr_peaks.bed \
+  --plot
 ```
 
-4. Remove IDR and MACS2 from your environment and go back to working home directory (i.e /shared/projects/<your_project>/M2.2-BIMS-epigenomique)
+4. Remove IDR and MACS2 from your environment and go back to working home directory (i.e /shared/projects/2321_m22_bims/<userid>)
 ```{bash eval=FALSE}
-module rm macs2/2.1.1.20160309
-module rm idr/2.0.4.2
+module unload macs2/2.2.7.1
+module unload idr/2.0.4.2
 
 ## If you are in 05-PeakCalling/idr
 cd ../..
@@ -662,7 +657,7 @@ cd 06-MotifAnalysis
 
 Your directory structure should be like this:
 ```
-/shared/projects/<your_project>/M2.2-BIMS-epigenomique
+/shared/projects/2321_m22_bims/<userid>
 │
 └───data
 │   
@@ -685,15 +680,17 @@ Your directory structure should be like this:
 3. Extract peak sequence in fasta format
 ```{bash eval=FALSE}
 ## First load samtools
-module add samtools/1.10
+module load samtools/1.15.1
 ## Create an index of the genome fasta file
 samtools faidx ../data/Escherichia_coli_K12.fasta
 
 ## First load bedtools
-module add bedtools/2.29.2
+module load bedtools/2.30.0
 ## Extract fasta sequence from genomic coordinate of peaks
-bedtools getfasta -fi ../data/Escherichia_coli_K12.fasta \
--bed ../05-PeakCalling/idr/FNR_anaerobic_idr_peaks.bed -fo FNR_anaerobic_idr_peaks.fa
+bedtools getfasta \
+  -fi ../data/Escherichia_coli_K12.fasta \
+  -bed ../05-PeakCalling/idr/FNR_anaerobic_idr_peaks.bed \
+  -fo FNR_anaerobic_idr_peaks.fa
 ```
 4. Download the file FNR_anaerobic_idr_peaks.fa on your computer
 
@@ -714,12 +711,19 @@ bedtools getfasta -fi ../data/Escherichia_coli_K12.fasta \
 ## - OPTIONAL : Motif discovery with RSAT (short peaks)
 1. Restrict the dataset to the summit of the peaks +/- 100bp using bedtools slop. Using bedtools slop to extend genomic coordinates allow not to go beyond chromosome boundaries as the user give the size of chromosomes as input (see fai file).
 ```{bash eval=FALSE}
-bedtools slop -b 100 -i ../05-PeakCalling/replicates/FNR_Anaerobic_A_summits.bed -g ../data/Escherichia_coli_K12.fasta.fai > FNR_Anaerobic_A_summits+-100.bed
+bedtools slop \
+  -b 100 \
+  -i ../05-PeakCalling/replicates/FNR_Anaerobic_A_summits.bed \
+  -g ../data/Escherichia_coli_K12.fasta.fai \
+  > FNR_Anaerobic_A_summits+-100.bed
 ```
 2. Extract the sequences for this BED file
 ```{bash eval=FALSE}
 ## Extract fasta sequence from genomic coordinate of peaks
-bedtools getfasta -fi ../data/Escherichia_coli_K12.fasta -bed FNR_Anaerobic_A_summits+-100.bed -fo FNR_Anaerobic_A_summits+-100.fa
+bedtools getfasta \
+  -fi ../data/Escherichia_coli_K12.fasta \
+  -bed FNR_Anaerobic_A_summits+-100.bed \
+  -fo FNR_Anaerobic_A_summits+-100.fa
 
 ## Compress the genome file as we won't need it anymore
 gzip ../data/Escherichia_coli_K12.fasta
@@ -757,13 +761,16 @@ gunzip ../data/Escherichia_coli_K12.fasta.gz
 ```
 2. Create a file suitable for annotatePeaks.pl.
 ```{bash eval=FALSE}
-cut -f1-5 ../05-PeakCalling/idr/FNR_anaerobic_idr_peaks.bed | \
-  awk -F "\t" '{print $0"\t+"}'  > FNR_anaerobic_idr_peaks.bed
+cut \
+  -f 1-5 \
+  ../05-PeakCalling/idr/FNR_anaerobic_idr_peaks.bed | \
+  awk -F "\t" '{print $0"\t+"}' \
+  > FNR_anaerobic_idr_peaks.bed
 ```
 3. Try annotatePeaks.pl
 ```{bash eval=FALSE}
 ## First load bedtools
-module add homer/4.10
+module load homer/4.11
 
 ## run Homer annotatePeaks
 annotatePeaks.pl --help
@@ -794,7 +801,7 @@ annotatePeaks.pl \
 ```{R eval=FALSE, include=TRUE}
 
 ## set working directory
-setwd("/shared/projects/<your_project>/M2.2-BIMS-epigenomique/07-PeakAnnotation")
+setwd("/shared/projects/2321_m22_bims/<userid>/07-PeakAnnotation")
 ## Or navigate using the "Files" tab and click on "More">"Set as Working Directory"
 
 ## read the file with peaks annotated with homer
@@ -889,7 +896,7 @@ Input your gene list (filename :  FNR_anaerobic_idr_final_peaks_annotation_offic
 1. We will download the already called peak files in bed format from GEO.
 Create a new folder and go in it.
 ```{bash eval=FALSE}
-cd /shared/projects/<your_project>/M2.2-BIMS-epigenomique
+cd /shared/projects/2321_m22_bims/<userid>
 mkdir 07-PeakAnnotation-bonus
 cd 07-PeakAnnotation-bonus
 ```
@@ -937,7 +944,7 @@ col = brewer.pal(9,'Set1')
 
 ```{r eval=FALSE, include=TRUE}
 # set the working directory to the folder in which the peaks are stored
-setwd("/shared/projects/<your_project>/M2.2-BIMS-epigenomique/07-PeakAnnotation-bonus")
+setwd("/shared/projects/2321_m22_bims/<userid>/07-PeakAnnotation-bonus")
 # read the peaks for each dataset
 peaks.forebrain = readPeakFile('GSM348064_p300_peaks.txt.gz')
 peaks.midbrain = readPeakFile('GSM348065_p300_peaks.txt.gz')
@@ -1081,6 +1088,41 @@ barplot(ego.forebrain,showCategory=10)
 
 
 ## FAQ
+### How to download the data
+**Goal**: Identify the datasets corresponding to the studied article and retrieve the data (reads as FASTQ files) corresponding to 2 replicates of a condition and the corresponding control.
+
+#### - Obtaining an identifier for a chosen dataset
+NGS datasets are (usually) made freely accessible for other scientists, by depositing these datasets into specialized databanks. [Sequence Read Archive (SRA)](http://www.ncbi.nlm.nih.gov/sra) located in USA hosted by NCBI, and its European equivalent [European Nucleotide Archive (ENA)](http://www.ebi.ac.uk/ena) located in England hosted by EBI both contains **raw reads**.
+
+Functional genomic datasets (transcriptomics, genome-wide binding such as ChIP-seq,...) are deposited in the databases [Gene Expression Omnibus (GEO)](http://www.ncbi.nlm.nih.gov/geo/) or its European equivalent [ArrayExpress](https://www.ebi.ac.uk/arrayexpress/).
+
+Within an article of interest, search for a sentence mentioning the deposition of the data in a database. Here, the following sentence can be found at the end of the Materials and Methods section:
+*"All genome-wide data from this publication have been deposited in NCBI’s Gene Expression Omnibus (**GSE41195**)."*
+We will thus use the **GSE41195** identifier to retrieve the dataset from the **NCBI GEO** (Gene Expression Omnibus) database.
+
+#### - Accessing GSE41195 from GEO
+1.  The GEO database hosts processed data files and many details related to the experiments. SRA (Sequence Read Archive) stores the actual raw sequence data.
+2. Search in Google **GSE41195**. Click on the first link to directly access the correct page on the GEO database.
+![alt text][geo]
+3. This GEO entry is a mixture of expression analysis (Nimblegen Gene Expression Array), chip-chip and chip-seq. At the bottom of the page, click on the subseries related to the chip-seq datasets. (this subseries has its own identifier: **GSE41187**).
+![alt text][geo2]
+4. From this page, we will focus on the experiment **FNR IP ChIP-seq Anaerobic A**. At the bottom of the page, click on the link "**GSM1010219** - FNR IP ChIP-seq Anaerobic A".
+5. In the new page, go to the bottom to find the SRA identifier. This is the identifier of the raw dataset stored in the SRA database.  
+![alt text][geo3]
+6. Copy the identifier **SRX189773** (do not click on the link that would take you to the SRA database, see below why)
+
+#### - Downloading FASTQ file from the ENA database
+Although direct access to the SRA database at the NCBI is doable, SRA does not store sequences in a FASTQ format. So, in practice, it's simpler (and quicker!!) to download datasets from the ENA database (European Nucleotide Archive) hosted by EBI (European Bioinformatics Institute) in UK. ENA encompasses the data from SRA.
+
+1. Go to the [EBI](http://www.ebi.ac.uk/) website. Paste your SRA identifier (SRX189773) and click on the button "search".
+![alt text][ebi4]
+2. Click on the first result. On the next page, there is a link to the FASTQ file. For efficiency, this file has already been downloaded and is available in the "data" folder (FNR_IP_ChIP-seq_Anaerobic_A.fastq.gz)  
+![alt text][ebi5]
+
+**tip**: To download the replicate and control datasets, we should redo the same steps starting from the GEO web page specific to the chip-seq datasets (see step 2.4) and choose **FNR IP ChIP-seq Anaerobic B** and **anaerobic INPUT DNA**. Downloaded FASTQ files are available in the data folder (FNR_IP_ChIP-seq_Anaerobic_B.fastq.gz and Anaerobic_INPUT_DNA.fastq.gz respectively)
+
+**At this point, you have three FASTQ files, two IPs, one control (INPUT).**
+
 ### How to extract peaks from the supplementary data of a publication ?
 The processed peaks (BED file) is sometimes available on the GEO website, or in supplementary data. Unfortunately, most of the time, the peak coordinates are embedded into supplementary tables and thus not usable "as is".
 This is the case for the studied article. To be able to use these peaks (visualize them in a genome browser, compare them with the peaks found with another program, perform downstream analyses...), you will need to (re)-create a BED file from the information available.
@@ -1098,7 +1140,7 @@ perl -lane 'print "gi|49175990|ref|NC_000913.2|\t".($F[0]-50)."\t".($F[0]+50)."\
 > gi|49175990|ref|NC_000913.2|	34015	34115
 4. Depending on the available information, the command will be different.
 
-## - How to obtain the annotation (=Gene) GTF file for IGV?
+### - How to obtain the annotation (=Gene) GTF file for IGV?
 Annotation files can be found on genome websites, NCBI FTP server, Ensembl, ... However, IGV required GFF format, or BED format, which are often not directly available.
 Here, I downloaded the annotation from the [UCSC Table browser](http://microbes.ucsc.edu/cgi-bin/hgTables?org=Escherichia+coli+K12&db=eschColi_K12&hgsid=1465191&hgta_doMainPage=1) as "Escherichia_coli_K_12_MG1655.annotation.gtf". Then, I changed the "chr" to the name of our genome with the following PERL command:
 
