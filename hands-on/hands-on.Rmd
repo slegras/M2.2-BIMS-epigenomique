@@ -106,11 +106,11 @@ Before you analyze the data, it is crucial to check the quality of the data. We 
 
 1. Create a directory named **01-QualityControl** in which to output results from fastqc
 ```{bash eval=FALSE}
-
+mkdir 01-QualityControl
 ```
 2. Go to the directory you've just created
 ```{bash eval=FALSE}
-
+cd 01-QualityControl
 ```
 
 Your directory structure should be like this
@@ -133,7 +133,7 @@ fastqc --help
 5. Launch the FASTQC program on the experiment file (FNR_IP_ChIP-seq_Anaerobic_A.fastq.gz)
   * -o: creates all output files in the specified output directory. '.' means current directory.
 ```{bash eval=FALSE}
-
+fastqc ../data/FNR_IP_ChIP-seq_Anaerobic_A.fastq.gz -o .
 ```  
 6. Wait until the analysis is finished. Check the FastQC result files.
 ```{bash eval=FALSE}
@@ -179,11 +179,12 @@ This prints the help of the program. However, this is a bit difficult to read ! 
 
 4. Create a directory named **02-Mapping** in which to output mapping results
 ```{bash eval=FALSE}
-
+cd ..
+mkdir 02-Mapping
 ```
 5. Go to the directory you've just created
 ```{bash eval=FALSE}
-
+cd 02-Mapping
 ```
 
 ## - Prepare the index file
@@ -191,11 +192,11 @@ This prints the help of the program. However, this is a bit difficult to read ! 
 
 2. Create a directory named **index** in which to output bowtie indexes
 ```{bash eval=FALSE}
-
+mkdir index
 ```
 3. Go to the newly created directory
 ```{bash eval=FALSE}
-
+cd index
 ```
 4. Try out bowtie2-build
 ```{bash eval=FALSE}
@@ -204,21 +205,21 @@ bowtie2-build
 5. Build the index for bowtie
 ```{bash eval=FALSE}
 ## Creating genome index : provide the path to the genome file and the name to give to the index (Escherichia_coli_K12)
-
+bowtie2-build ../../data/Escherichia_coli_K12.fasta Escherichia_coli_K12
 ```
 6. Go back to upper directory i.e 02-Mapping
 ```{bash eval=FALSE}
-
+cd ..
 ```
 
 ## - Mapping the samples
 1. Create a directory named **bam** to put mapping results
 ```{bash eval=FALSE}
-
+mkdir bam
 ```
 2. Go to the newly created directory bam
 ```{bash eval=FALSE}
-
+cd bam
 ```
 Your directory structure should be like this:
 ```
@@ -244,9 +245,8 @@ Your directory structure should be like this:
 ```{bash eval=FALSE}  
 ## Run alignment
 ## Tip: first type bowtie command line then add quotes around and prefix it with "sbatch --cpus 10 --wrap="
-module load formation/2421
 
-sbatch -p fast -o FNR_IP_ChIP-seq_Anaerobic_A.mapping.out --cpus-per-task 10 --wrap="bowtie2 -p 10 --mm -3 1 -x ../index/Escherichia_coli_K12 -U ../../data/FNR_IP_ChIP-seq_Anaerobic_A.fastq.gz -S FNR_IP_ChIP-seq_Anaerobic_A.sam"
+sbatch -A 2530_epigenomics -p fast -o FNR_IP_ChIP-seq_Anaerobic_A.mapping.out --cpus-per-task 10 --wrap="bowtie2 -p 10 --mm -3 1 -x ../index/Escherichia_coli_K12 -U ../../data/FNR_IP_ChIP-seq_Anaerobic_A.fastq.gz -S FNR_IP_ChIP-seq_Anaerobic_A.sam"
 ```  
 This should take few minutes as we work with a small genome. For the human genome, we would need either more time and more resources.
 
@@ -269,12 +269,12 @@ samtools view -@ 2 -q 10 -b FNR_IP_ChIP-seq_Anaerobic_A.sam | samtools sort -@ 2
 
 5. Create an index for the bam file
 ```{bash eval=FALSE}
-
+samtools index FNR_IP_ChIP-seq_Anaerobic_A.bam
 ```
 
 6. Compress the .sam file (you could also delete the file)
 ```{bash eval=FALSE}
-
+gzip FNR_IP_ChIP-seq_Anaerobic_A.sam
 ```
 
 7. Once it's done, unload the tools you used
@@ -306,7 +306,11 @@ cd /shared/projects/2530_epigenomics/<userid>/02-Mapping/bam
 module load picard/2.23.5
 
 ## Run picard
-
+picard MarkDuplicates \
+  -CREATE_INDEX true \
+  -INPUT FNR_IP_ChIP-seq_Anaerobic_A.bam \
+  -OUTPUT Marked_FNR_IP_ChIP-seq_Anaerobic_A.bam \
+  -METRICS_FILE Marked_FNR_IP_ChIP-seq_Anaerobic_A.metric &
 
 ```
 
@@ -316,7 +320,7 @@ To determine the number of duplicated reads marked by Picard, we can run the `sa
 ## Add samtools to your environment
 module load samtools/1.21
 ## run samtools
-
+samtools flagstat Marked_FNR_IP_ChIP-seq_Anaerobic_A.bam
 ```
 
 **Run picard MarkDuplicates on the 2 other samples. How many duplicates are found in each sample?**
@@ -326,7 +330,7 @@ Go back to working home directory (i.e /shared/projects/2530_epigenomics/<userid
 ## Unload picard and samtools
 module unload samtools/1.21 picard/2.23.5
 ## If you are in 02-Mapping/bam
-
+cd ../..
 ```
 
 # - ChIP quality controls
@@ -335,11 +339,11 @@ module unload samtools/1.21 picard/2.23.5
 ## - Plot the Lorenz curve with Deeptools
 1. Create a directory named **03-ChIPQualityControls** in which to put mapping results for IP
 ```{bash eval=FALSE}
-
+mkdir 03-ChIPQualityControls
 ```
 2. Go to the newly created directory
 ```{bash eval=FALSE}
-
+cd 03-ChIPQualityControls
 ```
 3. Run Deeptools [plotFingerprint](http://deeptools.readthedocs.io/en/latest/content/tools/plotFingerprint.html) [@ramirez_deeptools2:_2016] to draw the Lorenz curve
   * -b: List of indexed BAM files
@@ -350,11 +354,17 @@ module unload samtools/1.21 picard/2.23.5
 ## Load deeptools in your environment
 module load deeptools/3.5.4
 ## Run deeptools fingerprint
-
+plotFingerprint \
+  -p 2 \
+  --numberOfSamples 10000 \
+  -b ../02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_A.bam \
+     ../02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_B.bam \
+     ../02-Mapping/bam/Anaerobic_INPUT_DNA.bam \
+  -plot fingerprint_10000.png
 ```
 4. If plotFingerprint takes to much time to run. Take the file that has already been prepared for the training.
 ```{bash eval=FALSE}
-cp /shared/home/slegras/2530_epigenomics/slegras/03-ChIPQualityControls/fingerprint.png .
+cp /shared/projects/2530_epigenomics/training_data/03-ChIPQualityControls/fingerprint.png .
 ```
 5. Go find the file using the directory tree on the left of the Jupyterlab panel and click on the fingerprint.png file to display it in Jupyterlab.
 
@@ -412,11 +422,11 @@ bamCoverage --help
 ```
 2. Create a directory named **04-Visualization** to store bamCoverage outputs
 ```{bash eval=FALSE}
-
+mkdir 04-Visualization
 ```
 3. Go to the newly created directory
 ```{bash eval=FALSE}
-
+cd 04-Visualization
 ```
 
 Your directory structure should be like this:
@@ -439,9 +449,9 @@ Your directory structure should be like this:
 4. Generate a scaled bigwig file on the IP with bamCoverage
   * --bam: BAM file to process
   * --outFileName: output file name
-  * --outFileFormat: output file type (bigwig)
-  * --effectiveGenomeSize : size of the mappable genome (use 4639675)
-  * --normalizeUsing : different overall normalization methods; we will use CPM
+  * --outFileFormat: output file type
+  * --effectiveGenomeSize : size of the mappable genome
+  * --normalizeUsing : different overall normalization methods; we will use RPGC method corresponding to 1x average coverage
   * --skipNonCoveredRegions: skip non-covered regions
   * --extendReads 200: Extend reads to fragment size
   * --ignoreDuplicates: reads that have the same orientation and start position will be considered only once
@@ -475,6 +485,7 @@ bamCoverage \
 Go back to working home directory (i.e /shared/projects/2530_epigenomics/<userid>)
 ```{bash eval=FALSE}
 ## If you are in 04-Visualization
+cd ..
 ```
 
 # - Peak calling with MACS2
@@ -486,11 +497,12 @@ There are multiple programs to perform the peak-calling step. Some are more dire
 ## - Calling the peaks
 1. Create a directory named **05-PeakCalling** and one directory named **replicates** within to store peaks coordinates.
 ```{bash eval=FALSE}
-
+mkdir 05-PeakCalling
+mkdir 05-PeakCalling/replicates
 ```
 2. Go to the newly created directory replicates
 ```{bash eval=FALSE}
-
+cd 05-PeakCalling/replicates
 ```
 3. Try out MACS2
 ```{bash eval=FALSE}
@@ -511,17 +523,38 @@ This prints the help of the program.
   * -p 1e-2 indicates that we report the peaks if their associated p-value is lower than 1e-2. This is a relaxed threshold as we want to keep a high number of false positives in our peak set to later compute the IDR analysis.
   * &> MACS.out will output the verbosity (=information) in the file MACS.out
 ```{bash eval=FALSE}
-
+macs2 callpeak \
+  -t ../../02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_A.bam \
+  -c ../../02-Mapping/bam/Anaerobic_INPUT_DNA.bam \
+  --format BAM \
+  --gsize 4639675 \
+  --name 'FNR_Anaerobic_A' \
+  --bw 400 \
+  --fix-bimodal \
+  -p 1e-2 \
+  &> repA_MACS.out
 ```
 5. Run macs2 for replicate A and replicate B.
 
 6. In a new directory called pool, run macs2 for the pooled replicates A and B by giving both bam files as input treatment files (-t).
 ```{bash eval=FALSE}
 # You should be in 05-PeakCalling
-
+cd ..
+mkdir pool
+cd pool
 
 # Run macs2 for pooled replicates
-
+macs2 callpeak \
+  -t ../../02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_A.bam \
+     ../../02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_B.bam \
+  -c ../../02-Mapping/bam/Anaerobic_INPUT_DNA.bam \
+  --format BAM \
+  --gsize 4639675 \
+  --name 'FNR_Anaerobic_pool' \
+  --bw 400 \
+  --fix-bimodal \
+  -p 1e-2 \
+  &> pool_MACS.out
 ```
 
 ## - Analyzing MACS results
@@ -534,7 +567,9 @@ In order to take advantage of having biological replicates, we will create a com
 1. Create a new directory to store the peak coordinates resulting after idr analysis
 ```{bash eval=FALSE}
 ## You should be 05-PeakCalling
-
+cd ..
+mkdir idr
+cd idr
 ```
 Your directory structure should be like this:
 ```
@@ -572,7 +607,13 @@ idr --help
 
 3. Run idr
 ```{bash eval=FALSE}
-
+idr \
+  --samples ../replicates/FNR_Anaerobic_A_peaks.narrowPeak \
+            ../replicates/FNR_Anaerobic_B_peaks.narrowPeak \
+  --peak-list ../pool/FNR_Anaerobic_pool_peaks.narrowPeak \
+  --input-file-type narrowPeak \
+  --output-file FNR_anaerobic_idr_peaks.bed \
+  --plot
 ```
 
 **Add the IDR graph to this report. How many peaks are found with the IDR method?**
@@ -607,11 +648,11 @@ cd ../..
 For the motif analysis, you first need to extract the sequences corresponding to the peaks. There are several ways to do this (as usual...). If you work on a UCSC-supported organism, the easiest is to use RSAT fetch-sequences or Galaxy. Here, we will use Bedtools [@bedtools], as we have the genome of interest on our computer (Escherichia_coli_K12.fasta).
 1. Create a directory named **06-MotifAnalysis** to store data needed for motif analysis
 ```{bash eval=FALSE}
-
+mkdir 06-MotifAnalysis
 ```
 2. Go to the newly created directory
 ```{bash eval=FALSE}
-
+cd 06-MotifAnalysis
 ```
 
 Your directory structure should be like this:
@@ -640,12 +681,15 @@ Your directory structure should be like this:
 ## First load samtools
 module load samtools/1.21
 ## Create an index of the genome fasta file
-
+samtools faidx ../data/Escherichia_coli_K12.fasta
 
 ## First load bedtools
 module load bedtools/2.30.0
 ## Extract fasta sequence from genomic coordinate of peaks
-
+bedtools getfasta \
+  -fi ../data/Escherichia_coli_K12.fasta \
+  -bed ../05-PeakCalling/idr/FNR_anaerobic_idr_peaks.bed \
+  -fo FNR_anaerobic_idr_peaks.fa
 ```
 4. Download the file FNR_anaerobic_idr_peaks.fa on your computer
 
@@ -671,13 +715,13 @@ module load bedtools/2.30.0
 1. Create a directory named **07-PeakAnnotation**
 ```{bash eval=FALSE}
 # aller dans le répertoire si besoin
+cd ..
 
-
-
+mkdir 07-PeakAnnotation
 ```
 2. Go to the newly created directory
 ```{bash eval=FALSE}
-
+cd 07-PeakAnnotation
 ```
 
 ## - Associate peaks to closest genes
@@ -712,7 +756,11 @@ annotatePeaks.pl peak/BEDfile genome > outputfile
 
 3. Annotation peaks with nearby genes with Homer
 ```{bash eval=FALSE}
-
+annotatePeaks.pl \
+  FNR_anaerobic_idr_peaks.bed \
+  ../data/Escherichia_coli_K12.fasta \
+  -gtf ../data/Escherichia_coli_K_12_MG1655.annotation.fixed.gtf \
+  > FNR_anaerobic_idr_annotated_peaks.tsv
 ```
 
 **Look at the file you generated. Gene symbols are not present. Let's add them with some R code.**
@@ -731,19 +779,19 @@ setwd("/shared/projects/2530_epigenomics/<userid>/07-PeakAnnotation")
 ## data are loaded into a data frame
 ## sep="\t": this is a tab separated file
 ## header=TRUE: there is a line with headers (ie. column names)
-d <- 
+d <- read.table("FNR_anaerobic_idr_annotated_peaks.tsv", sep="\t", header=TRUE)
 
 ## Load a 2-columns files which contains in the first column gene IDs
 ## and in the second column gene symbols
 ## data are loaded into a data frame
 ## header=FALSE: there is no header line
-gene.symbol <- 
+gene.symbol <- read.table("../data/Escherichia_coli_K_12_MG1655.annotation.tsv.gz", header=FALSE)
 
 ## Merge the 2 data frames based on a common field
 ## by.x gives the columns name in which the common field is for the d data frame
 ## by.y gives the columns name in which the common field is for the gene.symbol data frame
 ## d contains several columns with no information. We select only interesting columns
-d.annot <- 
+d.annot <- merge(d[,c(1,2,3,4,5,6,8,10,11)], gene.symbol, by.x="Nearest.PromoterID", by.y="V1")
 
 ## Change column names of the resulting data frame
 colnames(d.annot)[2] <- "PeakID"  # name the 2d column of the new file "PeakID"
@@ -754,7 +802,7 @@ colnames(d.annot)[dim(d.annot)[2]] <- "Gene.Symbol"
 ## row.names=FALSE: don't output row names
 ## sep="\t": table fields are separated by tabs
 ## quote=FALSE: don't put quote around text.
-write.table
+write.table(d.annot, "FNR_anaerobic_idr_final_peaks_annotation.tsv", col.names=TRUE, row.names=FALSE, sep="\t", quote=FALSE)
 
 ```
 
@@ -767,7 +815,7 @@ write.table
 6. Go back to working home directory (i.e /shared/projects/training/\<login\>/M2.2-BIMS-epigenomique)
 ```{bash eval=FALSE}
 ## If you are in 07-PeakAnnotation
-
+cd ..
 ```
 
 ## - Search for Biological Processes, Molecular Functions or Cellular Compartments enrichment
@@ -786,8 +834,8 @@ Use Official gene symbols of the file FNR_anaerobic_idr_final_peaks_annotation.t
 Create a new folder and go in it.
 ```{bash eval=FALSE}
 cd /shared/projects/2530_epigenomics/<userid>
-
-
+mkdir 07-PeakAnnotation-bonus
+cd 07-PeakAnnotation-bonus
 ```
 2. Search for the dataset **GSE13845** either using Google or from the front page of [GEO](https://www.ncbi.nlm.nih.gov/geo/)
 3. On the description page, find the three GSM files, and click on each of then
@@ -834,15 +882,19 @@ col = brewer.pal(9,'Set1')
 ```{r eval=FALSE, include=TRUE}
 # set the working directory to the folder in which the peaks are stored
 setwd("/shared/projects/2530_epigenomics/<userid>/07-PeakAnnotation-bonus")
+# read the peaks for each dataset
+peaks.forebrain = readPeakFile('GSM348064_p300_peaks.txt.gz')
+peaks.midbrain = readPeakFile('GSM348065_p300_peaks.txt.gz')
+peaks.limb = readPeakFile('GSM348066_p300_peaks.txt.gz')
 ```
 
-```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
-peaks.forebrain = 
-peaks.midbrain = 
-peaks.limb = 
+```{r eval=TRUE, message=FALSE, warning=FALSE, include=FALSE}
+peaks.forebrain = readPeakFile('07-PeakAnnotation-bonus/GSM348064_p300_peaks.txt.gz')
+peaks.midbrain = readPeakFile('07-PeakAnnotation-bonus/GSM348065_p300_peaks.txt.gz')
+peaks.limb = readPeakFile('07-PeakAnnotation-bonus/GSM348066_p300_peaks.txt.gz')
 ```
 
-```{r eval=FALSE, include=TRUE}
+```{r eval=TRUE, include=TRUE}
 # create a list containing all the peak sets
 all.peaks = list(forebrain=peaks.forebrain,
 midbrain=peaks.midbrain,
@@ -855,27 +907,28 @@ We can start by computing some basic statistics on the peak sets.
 
 ### - How many peaks?
 
-```{r eval=FALSE, include=TRUE}
+```{r eval=TRUE, include=TRUE}
 # check the number of peaks for the forebrain dataset
-
+length(peaks.forebrain)
 
 # compute the number of peaks for all datasets using the list object
-
+sapply(all.peaks,length)
 
 # display this as a barplot
-
+barplot(sapply(all.peaks,length),col=col)
 ```
 
 ### - How large are these peaks?
-```{r eval=FALSE, include=TRUE}
+```{r eval=TRUE, include=TRUE}
 # statistics on the peak length for forebrain
-
+summary(width(peaks.forebrain))
 
 # size distribution of the peaks
-
+peaks.width = lapply(all.peaks,width)
+lapply(peaks.width,summary)
 
 # boxplot of the sizes
-
+boxplot(peaks.width,col=col)
 ```
 
 ### - What is the score of these peaks?
@@ -885,7 +938,7 @@ Can you adapt the previous code to display a boxplot of the peak score distribut
 ### - Where are the peaks located?
 
 We can now display the genomic distribution of the peaks along the chromosomes, including the peak scores, using the `covplot` function from `ChIPSeeker`:
-```{r eval=FALSE, include=TRUE}
+```{r eval=TRUE, include=TRUE}
 # genome wide distribution
 covplot(peaks.forebrain, weightCol="Maximum.Peak.Height")
 ```
@@ -895,7 +948,7 @@ covplot(peaks.forebrain, weightCol="Maximum.Peak.Height")
 ### - How does the signal look like at TSS?
 
 In addition to the genome wide plot, we can check if there is a tendency for the peaks to be located close to gene promoters.
-```{r eval=FALSE, include=TRUE}
+```{r eval=TRUE, include=TRUE}
 # define gene promoters
 promoter = getPromoters(TxDb=txdb, upstream=5000, downstream=5000)
 
@@ -912,7 +965,7 @@ We can now assign the peaks to the closest genes and genomic compartments (intro
 This is done using the function `annotatePeak` which compares the peak files with the annotation file of the mouse genome. This function returns
 a complex object which contains all this information.
 
-```{r eval=FALSE, include=TRUE}
+```{r eval=TRUE, include=TRUE}
 peakAnno.forebrain = annotatePeak(peaks.forebrain, tssRegion=c(-3000, 3000), TxDb=txdb, annoDb="org.Mm.eg.db")
 peakAnno.midbrain = annotatePeak(peaks.midbrain, tssRegion=c(-3000, 3000), TxDb=txdb, annoDb="org.Mm.eg.db")
 peakAnno.limb = annotatePeak(peaks.limb, tssRegion=c(-3000, 3000), TxDb=txdb, annoDb="org.Mm.eg.db")
@@ -922,7 +975,7 @@ peakAnno.limb = annotatePeak(peaks.limb, tssRegion=c(-3000, 3000), TxDb=txdb, an
 
 We can now analyze more in details the localization of the peaks (introns, exons, promoters, distal regions,...)
 
-```{r eval=FALSE, include=TRUE}
+```{r eval=TRUE, include=TRUE}
 # distribution of genomic compartments for forebrain peaks
 plotAnnoPie(peakAnno.forebrain)
 
@@ -944,11 +997,11 @@ By doing so, we assume that the target gene of the peak is always the closest on
 
 We will compute the enrichment of the Gene Ontology "Biological Process" categories in the set of putative target genes.
 
-```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+```{r eval=TRUE, message=FALSE, warning=FALSE, include=TRUE}
 # load the library
 library(clusterProfiler)
 ```
-```{r eval=FALSE, include=TRUE}
+```{r eval=TRUE, include=TRUE}
 # define the list of all mouse genes as a universe for the enrichment analysis
 universe = mappedkeys(org.Mm.egACCNUM)
 
