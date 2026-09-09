@@ -1,7 +1,7 @@
 ---
 title: "M2.2 BIMS - epigenomics"
-author: "Stephanie Le Gras$^{1}$ - slegras@igbmc.fr"
-date: "2025 September 11-12"
+author: "Stephanie Le Gras$^{1}$,$^{2}$ - slegras@unistra.fr"
+date: "2026 September 10-11"
 output:
   html_document:
     fig_caption: yes
@@ -24,7 +24,10 @@ bibliography: references.bib
 knitr::opts_chunk$set(echo = TRUE, root.dir="~/Documents/Formations/M2.2-BIMS-epigenomique")
 ```
 
-$^1$ GenomEast platform, IGBMC
+$^1$ Plateau de Biologie Moléculaire et de Bioinformatique, INCI (Strasbourg)
+
+$^2$ Équipe 1 – Modulation épigénétique des processus neurodégénératifs, LNCA (Strasbourg)
+
 
 # - Introduction
 ## - Goal
@@ -55,12 +58,12 @@ During this training, we will work on the cluster provided by the Institut Fran�
 ![alt text][selectjupyterlab]
 
 3. Fill the form as such: 
-  - reservation: 2530_epigenomics,
-  - account: 2530_epigenomics, 
+  - reservation: No reservation,
+  - account: 2635_master2_bims, 
   - Partition: fast
   - CPUS: 2 
   - Amount of memory: 10G
-  - Number of hours: 7
+  - Number of hours: 8
 ![alt text][jupyterlabform]
 
 4. Once the job is running, click on Connect to Jupyter 
@@ -70,25 +73,25 @@ During this training, we will work on the cluster provided by the Institut Fran�
 ## - Set up your working environment
 1. Go to the directory used for this training
 ```{bash eval=FALSE}
-cd /shared/projects/2530_epigenomics/
+cd /shared/projects/2635_master2_bims/
 ```
 2. Create a directory with your user id. You're going to work in this directory. Make sure not to use other's!
 ```{bash eval=FALSE}
-mkdir <userid>
+mkdir ${USER}
 ```
 3. Go to the newly created directory
 ```{bash eval=FALSE}
-cd <userid>
+cd ${USER}
 ```
 4. Copy the data we are going to use during the training
 
 ```{bash eval=FALSE}
-cp -r /shared/projects/2530_epigenomics/training_data/data .
+cp -r /shared/projects/2635_master2_bims/training_data/data .
 ```
 
 7. Your directory structure should be like this
  ```
-/shared/projects/2530_epigenomics/<userid>
+/shared/projects/2635_master2_bims/${USER}
 │
 └───data
 ```
@@ -115,7 +118,7 @@ Before you analyze the data, it is crucial to check the quality of the data. We 
 
 Your directory structure should be like this
 ```
-/shared/projects/2530_epigenomics/<userid>
+/shared/projects/2635_master2_bims/${USER}
 │
 └───data
 │   
@@ -141,7 +144,7 @@ ls
 ```
 > FNR_IP_ChIP-seq_Anaerobic_A_fastqc.html  FNR_IP_ChIP-seq_Anaerobic_A_fastqc.zip
 
-7. Go to the directory /shared/projects/2530_epigenomics/<userid>/1-QualityControl in the tree directory on the left of the jupyterhub window and double click on FNR_IP_ChIP-seq_Anaerobic_A_fastqc.html to visualize the file.
+7. Go to the directory /shared/projects/2635_master2_bims/${USER}/1-QualityControl in the tree directory on the left of the jupyterhub window and double click on FNR_IP_ChIP-seq_Anaerobic_A_fastqc.html to visualize the file.
 ![alt text][fastqc]
 
 8. Launch the FASTQC program on the replicate (FNR_IP_ChIP-seq_Anaerobic_B.fastq.gz) and on the control file (Anaerobic_INPUT_DNA.fastq.gz)
@@ -162,14 +165,14 @@ module unload fastqc/0.12.1
 **Goal**: Obtain the coordinates of each read to the reference genome.  
 
 ## - Choosing a mapping program
-There are multiple programs to perform the mapping step. For reads produced by an Illumina machine for ChIP-seq, the currently "standard" programs is Bowtie (versions 1 and 2)[@langmead_ultrafast_2009] [@langmead_fast_2012]. We will use **Bowtie version 2.5.1** for this exercise.
+There are multiple programs to perform the mapping step. For reads produced by an Illumina machine for ChIP-seq, the currently "standard" programs is Bowtie (versions 1 and 2)[@langmead_ultrafast_2009] [@langmead_fast_2012]. We will use **Bowtie version 2.5.5** for this exercise.
 
 ## - Bowtie
 1. Load Bowtie
 ```{bash eval=FALSE}
-module load bowtie2/2.5.1
+module load bowtie2/2.5.5
 ```
-2. Try out bowtie
+2. Try bowtie
 ```{bash eval=FALSE}
 bowtie2
 ```
@@ -197,7 +200,7 @@ This prints the help of the program. However, this is a bit difficult to read ! 
 ```{bash eval=FALSE}
 
 ```
-4. Try out bowtie2-build
+4. Try bowtie2-build
 ```{bash eval=FALSE}
 bowtie2-build
 ```
@@ -206,7 +209,7 @@ bowtie2-build
 ## Creating genome index : provide the path to the genome file and the name to give to the index (Escherichia_coli_K12)
 
 ```
-6. Go back to upper directory i.e 02-Mapping
+6. Go back to the upper directory, i.e. 02-Mapping
 ```{bash eval=FALSE}
 
 ```
@@ -222,7 +225,7 @@ bowtie2-build
 ```
 Your directory structure should be like this:
 ```
-/shared/projects/2530_epigenomics/<userid>
+/shared/projects/2635_master2_bims/${USER}
 │
 └───data
 │   
@@ -243,10 +246,12 @@ Your directory structure should be like this:
   * 2> FNR_IP_ChIP-seq_Anaerobic_A.out will output some statistics about the mapping in the file FNR_IP_ChIP-seq_Anaerobic_A.out
 ```{bash eval=FALSE}  
 ## Run alignment
-## Tip: first type bowtie command line then add quotes around and prefix it with "sbatch --cpus 10 --wrap="
-module load formation/2421
+## Tip: first type bowtie command line then add quotes around and prefix it with "sbatch -A 2635_master2_bims -p fast --cpus-per-task 10 --wrap="
 
-sbatch -p fast -o FNR_IP_ChIP-seq_Anaerobic_A.mapping.out --cpus-per-task 10 --wrap="bowtie2 -p 10 --mm -3 1 -x ../index/Escherichia_coli_K12 -U ../../data/FNR_IP_ChIP-seq_Anaerobic_A.fastq.gz -S FNR_IP_ChIP-seq_Anaerobic_A.sam"
+sbatch -A 2635_master2_bims -p fast \
+  -o FNR_IP_ChIP-seq_Anaerobic_A.mapping.out \
+  --cpus-per-task 10 \
+  --wrap="bowtie2 -p 10 --mm -3 1 -x ../index/Escherichia_coli_K12 -U ../../data/FNR_IP_ChIP-seq_Anaerobic_A.fastq.gz -S FNR_IP_ChIP-seq_Anaerobic_A.sam"
 ```  
 This should take few minutes as we work with a small genome. For the human genome, we would need either more time and more resources.
 
@@ -262,7 +267,7 @@ Bowtie output is a [SAM](https://samtools.github.io/hts-specs/SAMv1.pdf) file. T
   * -o: to specify a output file name
 ```{bash eval=FALSE}
 ## First load samtools
-module load samtools/1.21
+module load samtools/1.23.1
 ## Then run samtools
 samtools view -@ 2 -q 10 -b FNR_IP_ChIP-seq_Anaerobic_A.sam | samtools sort -@ 2 - -o FNR_IP_ChIP-seq_Anaerobic_A.bam 
 ```
@@ -279,7 +284,7 @@ samtools view -@ 2 -q 10 -b FNR_IP_ChIP-seq_Anaerobic_A.sam | samtools sort -@ 2
 
 7. Once it's done, unload the tools you used
 ```{bash eval=FALSE}
-module unload samtools/1.21 bowtie2/2.5.1
+module unload samtools/1.23.1 bowtie2/2.5.5
 ```
 
 ## - Map the second replicate and the control
@@ -293,7 +298,7 @@ How many reads were mapped for samples Anaerobic_INPUT_DNA and FNR_IP_ChIP-seq_A
 
 1. Go to the directory with alignment files
 ```{bash eval=FALSE}
-cd /shared/projects/2530_epigenomics/<userid>/02-Mapping/bam
+cd /shared/projects/2635_master2_bims/${USER}/02-Mapping/bam
 ```
 2. Run Picard markDuplicates to mark duplicated reads (= reads mapping at the exact same location on the genome)
   * CREATE_INDEX: Create .bai file for the result bam file with marked duplicate reads
@@ -314,17 +319,17 @@ To determine the number of duplicated reads marked by Picard, we can run the `sa
 
 ```{bash eval=FALSE}
 ## Add samtools to your environment
-module load samtools/1.21
+module load samtools/1.23.1
 ## run samtools
 
 ```
 
-**Run picard MarkDuplicates on the 2 other samples. How many duplicates are found in each sample?**
+**Run picard MarkDuplicates on the two other samples. How many duplicates are found in each sample?**
 
-Go back to working home directory (i.e /shared/projects/2530_epigenomics/<userid>/)
+Go back to working home directory (i.e /shared/projects/2635_master2_bims/${USER}/)
 ```{bash eval=FALSE}
 ## Unload picard and samtools
-module unload samtools/1.21 picard/2.23.5
+module unload samtools/1.23.1 picard/2.23.5
 ## If you are in 02-Mapping/bam
 
 ```
@@ -348,22 +353,22 @@ module unload samtools/1.21 picard/2.23.5
   * -p: Number of processors to use (2 processors)
 ```{bash eval=FALSE}
 ## Load deeptools in your environment
-module load deeptools/3.5.4
+module load deeptools/3.5.6
 ## Run deeptools fingerprint
 
 ```
-4. If plotFingerprint takes to much time to run. Take the file that has already been prepared for the training.
+4. If plotFingerprint takes too much time to run, take the file that has already been prepared for the training.
 ```{bash eval=FALSE}
-cp /shared/home/slegras/2530_epigenomics/slegras/03-ChIPQualityControls/fingerprint.png .
+cp /shared/projects/2635_master2_bims/training_data/03-ChIPQualityControls/fingerprint.png .
 ```
 5. Go find the file using the directory tree on the left of the Jupyterlab panel and click on the fingerprint.png file to display it in Jupyterlab.
 
-**Look at the result files fingerprint.png (add the plot to this report). Give an explanation of the curves?**  
+**Look at the result files fingerprint.png (add the plot to this report). Give an explanation of the curves.**  
 
-Go back to the working home directory (i.e /shared/projects/2530_epigenomics/\<login\>)
+Go back to the working home directory (i.e /shared/projects/2635_master2_bims/${USER})
 ```{bash eval=FALSE}
 ## Unload deepTools
-module unload deeptools/3.5.4
+module unload deeptools/3.5.6
 ## If you are in 03-ChIPQualityControls
 cd ..
 ```
@@ -379,12 +384,12 @@ If the data are on your computer, to prevent data transfer, it's easier to visua
 1. Download the following files from the server onto your computer
   * data/Escherichia_coli_K12.fasta
   * data/Escherichia_coli_K_12_MG1655.annotation.fixed.gtf
-  * 02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_A.bam
-  * 02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_A.bam.bai
-  * 02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_B.bam
-  * 02-Mapping/bam/FNR_IP_ChIP-seq_Anaerobic_B.bam.bai  
-  * 02-Mapping/bam/Anaerobic_INPUT_DNA.bam
-  * 02-Mapping/bam/Anaerobic_INPUT_DNA.bam.bai
+  * 02-Mapping/bam/Marked_FNR_IP_ChIP-seq_Anaerobic_A.bam
+  * 02-Mapping/bam/Marked_FNR_IP_ChIP-seq_Anaerobic_A.bai
+  * 02-Mapping/bam/Marked_FNR_IP_ChIP-seq_Anaerobic_B.bam
+  * 02-Mapping/bam/Marked_FNR_IP_ChIP-seq_Anaerobic_B.bai  
+  * 02-Mapping/bam/Marked_Anaerobic_INPUT_DNA.bam
+  * 02-Mapping/bam/Marked_Anaerobic_INPUT_DNA.bai
 2. Open IGV on your computer
 3. Load the genome
   * Genomes / Load Genome from File...
@@ -392,7 +397,7 @@ If the data are on your computer, to prevent data transfer, it's easier to visua
 4. Load an annotation file named Escherichia_coli_K_12_MG1655.annotation.fixed.gtf into IGV
   * File / Load from File...
   * Select the annotation file. The positions of the genes are now loaded.
-5. Load the three bam files (FNR_IP_ChIP-seq_Anaerobic_A.bam, FNR_IP_ChIP-seq_Anaerobic_B.bam and Anaerobic_INPUT_DNA.bam) in IGV.
+5. Load the three bam files (Marked_FNR_IP_ChIP-seq_Anaerobic_A.bam, Marked_FNR_IP_ChIP-seq_Anaerobic_B.bam and Marked_Anaerobic_INPUT_DNA.bam) in IGV.
   * File / Load from File...
   * Select the bam files. 
 ![alt text][igvbam]
@@ -406,7 +411,7 @@ However, looking at BAM file as such does not allow to directly compare the two 
 1. Try it out
 ```{bash eval=FALSE}
 ## Load deeptools in your environment
-module load deeptools/3.5.4
+module load deeptools/3.5.6
 ## run bamCoverage
 bamCoverage --help
 ```
@@ -421,7 +426,7 @@ bamCoverage --help
 
 Your directory structure should be like this:
 ```
-/shared/projects/2530_epigenomics/<userid>
+/shared/projects/2635_master2_bims/${USER}
 │
 └───data
 │   
@@ -472,7 +477,7 @@ bamCoverage \
 **Go back to the genes we looked at earlier: pepT, ycfP (add screenshots to this report). Look at the shape of the signal.**  
 **Keep IGV opened.**
 
-Go back to working home directory (i.e /shared/projects/2530_epigenomics/<userid>)
+Go back to working home directory (i.e /shared/projects/2635_master2_bims/${USER})
 ```{bash eval=FALSE}
 ## If you are in 04-Visualization
 ```
@@ -533,12 +538,12 @@ In order to take advantage of having biological replicates, we will create a com
 
 1. Create a new directory to store the peak coordinates resulting after idr analysis
 ```{bash eval=FALSE}
-## You should be 05-PeakCalling
+## You should be in 05-PeakCalling
 
 ```
 Your directory structure should be like this:
 ```
-/shared/projects/2530_epigenomics/<userid>
+/shared/projects/2635_master2_bims/${USER}
 │
 └───data
 │   
@@ -577,7 +582,7 @@ idr --help
 
 **Add the IDR graph to this report. How many peaks are found with the IDR method?**
 
-4. Remove IDR and MACS2 from your environment and go back to working home directory (i.e /shared/projects/2530_epigenomics/<userid>)
+4. Remove IDR and MACS2 from your environment and go back to working home directory (i.e /shared/projects/2635_master2_bims/${USER})
 ```{bash eval=FALSE}
 module unload macs2/2.2.7.1
 module unload idr/2.0.4.2
@@ -595,28 +600,30 @@ cd ../..
 * 05-PeakCalling/idr/FNR_anaerobic_idr_peaks.bed
 
 **Go back again to the genes we looked at earlier: pepT, ycfP. Do you see peaks (add the 2 screenshots to this report)?**
-**Navigate throught the genome to find peaks detected in the replicates (peak calling per replicate) and not found/kept with the IDR method** 
+**Navigate through the genome to find peaks detected in the replicates (peak calling per replicate) and not found/kept with the IDR method** 
 
 **From now on, peak set we keep is the IDR peak set.**
 
-# - Motif analysis
+# - Motif analysis (meme-chip)
 **Goal**: Define binding motif(s) for the ChIPed transcription factor and identify potential cofactors
 
 ## - Retrieve the peak sequences corresponding to the peak coordinate file (BED)
 
-For the motif analysis, you first need to extract the sequences corresponding to the peaks. There are several ways to do this (as usual...). If you work on a UCSC-supported organism, the easiest is to use RSAT fetch-sequences or Galaxy. Here, we will use Bedtools [@bedtools], as we have the genome of interest on our computer (Escherichia_coli_K12.fasta).
+For the motif analysis, you first need to extract the sequences corresponding to the peaks. 
+
+
 1. Create a directory named **06-MotifAnalysis** to store data needed for motif analysis
 ```{bash eval=FALSE}
-
+mkdir 06-MotifAnalysis
 ```
 2. Go to the newly created directory
 ```{bash eval=FALSE}
-
+cd 06-MotifAnalysis
 ```
 
 Your directory structure should be like this:
 ```
-/shared/projects/2530_epigenomics/<userid>
+/shared/projects/2635_master2_bims/${USER}
 │
 └───data
 │   
@@ -635,34 +642,65 @@ Your directory structure should be like this:
 └───06-MotifAnalysis <- you should be in this folder
 ```
 
-3. Extract peak sequence in fasta format
+3. Create a bed file with the coordinates of the peak summits +/- 50 bp. 
+To do this, first we use awk to generate the bed file with the coordinates of the peak summits. Then, we use bedtools slop to extend the peaks by 50 bp on each side. 
 ```{bash eval=FALSE}
-## First load samtools
-module load samtools/1.21
+## First Generate the bed file with the coordinates of the peak summits. 
+awk
+
+## Load samtools and create a file index of the genome fasta file. The file contains the chromosome sizes. This is needed for bedtools slop to work.
+module load samtools/1.23.1
+
 ## Create an index of the genome fasta file
 
 
-## First load bedtools
-module load bedtools/2.30.0
-## Extract fasta sequence from genomic coordinate of peaks
+## Then load bedtools
+module load bedtools/2.31.1
+
+## Generate the bed file with the coordinates of the peak summits +/- 50 bp
 
 ```
-4. Download the file FNR_anaerobic_idr_peaks.fa on your computer
 
-## - Motif discovery with RSAT
-1. Open a connection to a Regulatory Sequence Analysis Tools server. You can choose between various website mirrors.
-  * Teaching Server  (recommended for this training) [https://rsat.france-bioinformatique.fr/teaching/](https://rsat.france-bioinformatique.fr/teaching/)
-2. In the left menu, click on **NGS ChIP-seq** and then click on **peak-motifs**. A new page opens, with a form
-3. The default peak-motifs web form only displays the essential options. There are only two mandatory parameters.
-  * The **title box**, which you will set as **FNR Anaerobic** . The **sequences**, that you will **upload from your computer**, by clicking on the button Choose file, and select the file **FNR_anaerobic_idr_peaks.fa** from your computer.
-4. We will now modify some of the advanced options in order to fine-tune the analysis according to your data set.
-  * Open the "Reduce peak sequences" title, and make sure the **Cut peak sequences: +/- ** option is set to **0** (we wish to analyze our full dataset)
-  * Open the “Motif Discovery parameters” title, and check the **oligomer sizes 6 and 7** (but not 8). Check "Discover over-represented spaced word pairs **[dyad-analysis]**"
-  * Under “Compare discovered motifs with databases”, **add RegulonDB prokaryotes** (2015_08) as the studied organism is the bacteria E. coli.
-5. Click “**GO**”. 
-6. The Web page displays a link, You can already click on this link. The report will be progressively updated during the processing of the workflow.
+4. Extract peak sequence in fasta format
+```{bash eval=FALSE}
+## First load bedtools
+module load bedtools/2.31.1
 
-**Is there anything interesting in RSAT results? If so, which motif is of interest and why (add screenshot of the results).**
+## Extract fasta sequence from genomic coordinate of peaks
+bedtools slop
+```
+
+## - Motif discovery with MEME-ChIP
+MEME-ChIP is part of the MEME suite and combines several motif discovery and motif enrichment approaches. We will use it to identify sequence motifs enriched in the peak sequences and to compare them to known motifs.
+
+1. Load MEME in your environment
+```{bash eval=FALSE}
+module load meme/5.5.7
+```
+
+2. Have a look at the help page of MEME-ChIP
+```{bash eval=FALSE}
+meme-chip -h
+```
+
+3. Launch MEME-ChIP on the peak sequences
+  * `-oc`: output directory
+  * `-db`: motif database used for motif comparison. Here we use the prokaryote motif database distributed with MEME.
+  * `-meme-minsites` and `-meme-maxsites`: minimum and maximum number of sites to search. We restrict the search to motifs with 6 to 12 sites.
+  * `-meme-nmotifs`: maximum number of motifs reported by MEME
+  * the last argument is the input FASTA file containing the peak sequences
+```{bash eval=FALSE}
+meme-chip
+```
+
+4. Once the analysis is finished, list the result files
+```{bash eval=FALSE}
+ls FNR_anaerobic_memechip
+```
+
+5. Open the main HTML report named `meme-chip.html` from the directory `FNR_anaerobic_memechip` in the JupyterLab file browser, or download the result directory and inspect the report locally in a web browser.
+
+**Is there anything interesting in MEME-ChIP results? If so, which motif is of interest and why (add screenshot of the results).**
 
 # - Peak annotation
 
@@ -675,6 +713,7 @@ module load bedtools/2.30.0
 
 
 ```
+
 2. Go to the newly created directory
 ```{bash eval=FALSE}
 
@@ -684,7 +723,7 @@ module load bedtools/2.30.0
 
 [annotatePeaks.pl](http://homer.ucsd.edu/homer/ngs/annotation.html) from the Homer suite [@heinz_simple_2010] associates peaks with nearby genes.
 
-1. Create a file suitable for annotatePeaks.pl. To run the tool needs a peak bed file composed of 6 fields (chr, start, end, name, score, strand). The 5 first columns of the file ../05-PeakCalling/idr/FNR_anaerobic_idr_peaks.bed are good but all other colums are of no use and the strand is missing. To generate a file with a correct format, we are using the tool cut to select fields 1 to 5 of the peak file and we add a "+" to every line using awk (*this is code example that can do what we want, not the only solution to do so.*).
+1. Create a file suitable for annotatePeaks.pl. To run the tool needs a peak bed file composed of 6 fields (chr, start, end, name, score, strand). The 5 first columns of the file ../05-PeakCalling/idr/FNR_anaerobic_idr_peaks.bed are good but all other columns are of no use and the strand is missing. To generate a file with a correct format, we are using the tool cut to select fields 1 to 5 of the peak file and we add a "+" to every line using awk (*this is a code example that can do what we want, not the only solution to do so.*).
 ```{bash eval=FALSE}
 cut \
   -f 1-5 \
@@ -692,23 +731,11 @@ cut \
   awk -F "\t" '{print $0"\t+"}' \
   > FNR_anaerobic_idr_peaks.bed
 ```
+
 2. Try annotatePeaks.pl
 ```{bash eval=FALSE}
-## First load bedtools
-module load homer/4.11
-
-## run Homer annotatePeaks
-annotatePeaks.pl --help
+annotatePeaks.pl
 ```
-Let's see the parameters:
-
-annotatePeaks.pl peak/BEDfile genome > outputfile
-	User defined annotation files (default is UCSC refGene annotation):
-		annotatePeaks.pl accepts GTF (gene transfer formatted) files to annotate positions relative
-		to custom annotations, such as those from de novo transcript discovery or Gencode.
-
-		-gtf <gtf format file> (Use -gff and -gff3 if appropriate, but GTF is better)
-
 
 3. Annotation peaks with nearby genes with Homer
 ```{bash eval=FALSE}
@@ -724,7 +751,7 @@ annotatePeaks.pl peak/BEDfile genome > outputfile
 ```{R eval=FALSE, include=TRUE}
 
 ## set working directory
-setwd("/shared/projects/2530_epigenomics/<userid>/07-PeakAnnotation")
+setwd("/shared/projects/2635_master2_bims/${USER}/07-PeakAnnotation")
 ## Or navigate using the "Files" tab and click on "More">"Set as Working Directory"
 
 ## read the file with peaks annotated with homer
@@ -746,7 +773,7 @@ gene.symbol <-
 d.annot <- 
 
 ## Change column names of the resulting data frame
-colnames(d.annot)[2] <- "PeakID"  # name the 2d column of the new file "PeakID"
+colnames(d.annot)[2] <- "PeakID"  # name the 2nd column of the new file "PeakID"
 colnames(d.annot)[dim(d.annot)[2]] <- "Gene.Symbol"
 
 ## output the merged data frame to a file named "FNR_anaerobic_idr_final_peaks_annotation.tsv"
@@ -762,18 +789,21 @@ write.table
 
 **How many genes are associated to the "promoter-TSS" feature?**
 
-**What are all the possible gene features? (see in column Annotation - extract information like promoter-TSS, TSS, ...). Create a plot (pie chart, barplot...) showing the proportion of each of them (include both the plot and the code that created it in the report).**
+**What are the possible gene features? (see in column Annotation - extract information like promoter-TSS, TSS, ...). Create a plot (pie chart, barplot...) showing the proportion of each of them (include both the plot and the code that created it in the report).**
 
-6. Go back to working home directory (i.e /shared/projects/training/\<login\>/M2.2-BIMS-epigenomique)
+6. Go back to working home directory (i.e /shared/projects/training/${USER}/M2.2-BIMS-epigenomique)
 ```{bash eval=FALSE}
 ## If you are in 07-PeakAnnotation
 
 ```
 
-## - Search for Biological Processes, Molecular Functions or Cellular Compartments enrichment
-Use Official gene symbols of the file FNR_anaerobic_idr_final_peaks_annotation.tsv to search for enriched gene ontologies with the tool DAVID (Database for Annotation, Visualization and Integrated Discovery). Input your gene list on the DAVID website: https://david.ncifcrf.gov/. **Use DAVID convert ID tool if needed**
+## - Functional enrichment analysis of the genes associated to the peaks
+Use the Nearest.PromoterID column of the file FNR_anaerobic_idr_final_peaks_annotation.tsv to search for enriched functional annotations with the tool DAVID (Database for Annotation, Visualization and Integrated Discovery). Input the genes list on the DAVID website: https://davidbioinformatics.nih.gov/. 
 
-**Are there biological processes enriched in the list of genes associated to the peaks? Show the top results of the Functional Annotation Clustering.**
+Use *Escherichia coli str. K-12 substr. MG1655* as the background species. 
+Use the tool *functional annotation*.
+
+**Are there biological processes (GO) enriched in the list of genes associated to the peaks? Show the top results of the Functional Annotation Clustering.**
 **Are these genes enriched in some KEGG pathway? Which ones?**
 
 # - Bonus: Annotation of ChIP-peaks using R tools
@@ -785,7 +815,7 @@ Use Official gene symbols of the file FNR_anaerobic_idr_final_peaks_annotation.t
 1. We will download the already called peak files in bed format from GEO.
 Create a new folder and go in it.
 ```{bash eval=FALSE}
-cd /shared/projects/2530_epigenomics/<userid>
+cd /shared/projects/2635_master2_bims/${USER}
 
 
 ```
@@ -833,7 +863,7 @@ col = brewer.pal(9,'Set1')
 
 ```{r eval=FALSE, include=TRUE}
 # set the working directory to the folder in which the peaks are stored
-setwd("/shared/projects/2530_epigenomics/<userid>/07-PeakAnnotation-bonus")
+setwd("/shared/projects/2635_master2_bims/${USER}/07-PeakAnnotation-bonus")
 ```
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
